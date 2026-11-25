@@ -67,10 +67,9 @@ h1 { font:normal clamp(27px,2.7vw,43px)/1.02 var(--display); letter-spacing:-.03
 .zone .question { fill:#fff9ef; stroke:#533f22; stroke-width:1.5; vector-effect:non-scaling-stroke; }
 .zone .qtext { fill:#533f22; font:700 13px var(--sans); pointer-events:none; text-anchor:middle; }
 .zone:hover .question,.zone.active .question { fill:#f0ce9a; }
-.map-context,.map-count,.tools button {
+.map-count,.tools button {
   border:1px solid var(--line); background:#fcfbf7f5; box-shadow:0 2px 7px #1e332411; border-radius:6px;
 }
-.map-context { position:absolute; z-index:1; top:14px; left:14px; max-width:calc(100% - 28px); padding:7px 11px; font-size:13px; color:var(--accent); pointer-events:none; }
 .map-count { position:absolute; left:14px; bottom:14px; padding:5px 9px; font-size:12px; color:var(--muted); pointer-events:none; }
 .tools { position:absolute; bottom:14px; right:14px; display:grid; gap:5px; }
 .tools button { width:39px; height:39px; display:grid; place-items:center; font-size:23px; line-height:1; }
@@ -125,7 +124,6 @@ button.data-row:hover { background:var(--soft); }
   .head-actions { gap:4px; }
   .button { font-size:12px; padding:4px 6px; }
   .mobile-toggle { display:block; }
-  #shares-trigger { display:none; }
   .workspace { grid-template-columns:minmax(0,1fr); position:relative; }
   .sidebar { position:absolute; top:0; bottom:0; left:0; width:min(295px,86%); z-index:4;
     box-shadow:6px 0 30px #1b392a2e; }
@@ -133,7 +131,6 @@ button.data-row:hover { background:var(--soft); }
   .details { top:auto; bottom:46px; right:61px; left:9px; width:auto; max-width:unset;
     max-height:min(47%,360px); padding:12px; }
   .details h2 { font-size:23px; margin-block:5px; }
-  .map-context { top:8px; left:8px; }
   .map-count { left:8px; bottom:8px; }
   .tools { right:8px; bottom:8px; }
 }
@@ -142,15 +139,11 @@ button.data-row:hover { background:var(--soft); }
   .zone .shape { transition:fill-opacity .13s; }
 }
 
-.map-options { position:absolute; z-index:1; left:14px; top:51px; display:flex; gap:6px; }
-.map-options .button { padding:5px 10px; min-height:32px; font-size:13px; }
-.map-areas[aria-pressed="true"] { background:#edf4ec; border-color:#a1bdab; color:#213d30; font-weight:700; }
 .area-key { position:absolute; bottom:14px; left:164px; padding:5px 9px; font-size:12px;
   color:#394b40; background:#fcfbf7f5; border:1px solid var(--line); border-radius:6px; pointer-events:none; }
 #area-labels { pointer-events:none; } #detail-area, button.data-row .value {font-weight:700;}
 .area-label text { font:900 14px/1 "Segoe UI Black","Arial Black",system-ui,sans-serif; fill:#101611; stroke:#fff; stroke-width:.105em; stroke-linejoin:round; paint-order:stroke fill; text-anchor:middle; dominant-baseline:central; }
 @media (max-width:670px) {
-  .map-options { left:8px; top:44px; }
   .area-key { bottom:43px; left:8px; font-size:10px; }
   .map:has(.details:not([hidden])) .area-key { display:none; }
 }
@@ -216,6 +209,25 @@ button.data-row:hover { background:var(--soft); }
   .timeline-key { grid-column:1; white-space:normal; }
 }
 
+
+.map-column { display:grid; grid-template-rows:auto minmax(0,1fr); min-width:0; min-height:0; }
+.map-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:7px; padding:9px 14px;
+  background:var(--paper); border-bottom:1px solid var(--line); }
+#concept-trigger { color:var(--accent); background:#edf3ec; border-color:#bdcfbf; }
+#concept-trigger:hover { background:#e2ece2; }
+#concept-dialog { width:min(842px,calc(100% - 28px)); max-height:90dvh; }
+#concept-dialog .dialog-head { gap:10px; }
+#concept-dialog h2 { font-size:clamp(19px,4.5vw,28px); }
+.concept-plan { overflow:auto; margin-top:12px; }
+.concept-plan img { display:block; width:100%; height:auto; }
+#concept-full { display:inline-block; color:var(--accent); margin-top:10px; font-size:13px; }
+@media (max-width:670px) {
+  .map-toolbar { gap:4px; padding:6px 8px; }
+  .map-toolbar .button { min-height:35px; }
+  #concept-dialog { padding:12px; }
+  .concept-plan img { min-width:440px; }
+}
+
 </style>
 </head>
 <body>
@@ -229,8 +241,6 @@ button.data-row:hover { background:var(--soft); }
     </div>
     <div class="head-actions">
       <button class="button mobile-toggle" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filters">Фильтры</button>
-      <button class="button" id="shares-trigger" type="button">Доли по схеме</button>
-      <button class="button" id="list-trigger" type="button">Список зон</button>
     </div>
   </header>
   <div class="workspace">
@@ -267,10 +277,14 @@ button.data-row:hover { background:var(--soft); }
         <span id="summary" aria-live="polite"></span>
         <button class="text-btn" type="button" id="sidebar-list">Список</button>
       </div>
-      <button class="text-btn mobile-toggle" type="button" id="mobile-shares">Доли по исходной схеме</button>
     </aside>
-    <main class="map" id="map">
-      <div class="map-context" id="map-context">Вся территория</div>
+    <main class="map-column">
+      <div class="map-toolbar" role="group" aria-label="Материалы карты">
+        <button class="button" id="concept-trigger" type="button" aria-haspopup="dialog">Концептуальное зонирование</button>
+        <button class="button" id="shares-trigger" type="button">Доли по схеме</button>
+        <button class="button" id="list-trigger" type="button">Список зон</button>
+      </div>
+      <div class="map" id="map">
       <svg id="viewport" role="group" tabindex="0" aria-label="План квартала. Стрелки перемещают карту, плюс и минус меняют масштаб. Зоны доступны с клавиатуры через список.">
         <g id="world" style="isolation:isolate">
           <image id="basemap" x="0" y="0" pointer-events="none" href="atlas-preview-43aaa1b8.webp"></image>
@@ -279,10 +293,6 @@ button.data-row:hover { background:var(--soft); }
         </g>
         <g id="area-labels" aria-hidden="true"></g>
       </svg>
-      <div class="map-options">
-        <button type="button" class="button map-areas" id="toggle-areas" aria-pressed="true" title="Площади появляются при увеличении карты">Площади</button>
-        <button type="button" class="button" id="load-full-plan">Детальный план</button>
-      </div>
       <div class="area-key" id="area-key" hidden>Подписи в м² · ≈ обмер · * схематичный контур</div>
       <div id="scale-label" class="map-count" aria-hidden="true"></div>
       <div class="tools" aria-label="Управление картой">
@@ -307,6 +317,7 @@ button.data-row:hover { background:var(--soft); }
         <p class="note" id="detail-note" hidden></p>
         <p class="hint" id="detail-source"></p><button class="text-btn" id="nearby" type="button">Показать окружение</button>
       </aside>
+      </div>
     </main>
   </div>
   <section class="year-timeline" aria-label="Этапность ввода">
@@ -318,6 +329,11 @@ button.data-row:hover { background:var(--soft); }
     <p class="timeline-key" id="delivery-key">Серым — позже выбранного года или срок не указан</p>
   </section>
 </div>
+<dialog id="concept-dialog" aria-labelledby="concept-title">
+  <div class="dialog-head"><h2 id="concept-title">Концептуальное зонирование</h2><form method="dialog"><button class="close" aria-label="Закрыть схему">×</button></form></div>
+  <div class="concept-plan" tabindex="0" aria-label="План концептуального зонирования"><img id="concept-image" alt="Схема концептуального зонирования Дербеневской с легендой"></div>
+  <a id="concept-full" href="concept-zoning.png" target="_blank" rel="noopener">Открыть схему в полном размере</a>
+</dialog>
 <dialog id="data-dialog" aria-labelledby="dialog-title">
   <div class="dialog-head"><h2 id="dialog-title"></h2><form method="dialog"><button class="close" aria-label="Закрыть окно">×</button></form></div>
   <p class="lead" id="dialog-info"></p>
@@ -408,7 +424,6 @@ function refresh() {
     button.setAttribute('aria-pressed', String(selectedCategories.has(key)));
   }
   get('summary').textContent = visible.length ? 'На карте ' + pluralZones(visible.length) : 'Нет зон по этим условиям';
-  get('map-context').textContent = (place.value ? places.get(place.value).name : 'Вся территория') + (currentFloor==='upper'?' · 2-й этаж':'');
   updateClearButton();
   if (selected && !ids.has(selected.id)) showDetails(null);
   queueAreaLabels();
@@ -744,9 +759,14 @@ get('nearby').addEventListener('click', () => {
 });
 get('filter-toggle').addEventListener('click', () => toggleMobileFilters(!get('filters').classList.contains('mobile-open')));
 get('list-trigger').addEventListener('click', openList);
+const conceptDialog = get('concept-dialog');
+get('concept-trigger').addEventListener('click', () => {
+  toggleMobileFilters(false);
+  get('concept-image').src = get('concept-full').href;
+  conceptDialog.showModal();
+});
 get('sidebar-list').addEventListener('click', openList);
 get('shares-trigger').addEventListener('click', openShares);
-get('mobile-shares').addEventListener('click', openShares);
 
 function beginGesture(target = null) {
   const [first, second] = pointers.values();
@@ -826,14 +846,13 @@ svg.addEventListener('keydown', event => {
   }
 });
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && !dialog.open) {
+  if (event.key === 'Escape' && !dialog.open && !conceptDialog.open) {
     if (!detail.hidden) showDetails(null);
     else toggleMobileFilters(false);
   }
 });
 
 const labelLayer = get('area-labels');
-const areaToggle = get('toggle-areas');
 const areaKey = get('area-key');
 
 const clips = svgElement('defs', {});
@@ -853,10 +872,19 @@ function queueAreaLabels() {
   });
 }
 
+let loadingFullPlan = false;
+function loadFullPlanOnZoom() {
+  if (loadingFullPlan || camera.scale / camera.min < 1.65) return;
+  loadingFullPlan = true;
+  const image = new Image();
+  image.onload = () => get('basemap').setAttribute('href', image.src);
+  image.src = 'atlas-full-43aaa1b8.png';
+}
+
 function drawAreaLabels() {
+  loadFullPlanOnZoom();
   labelLayer.replaceChildren();
   areaKey.hidden = true;
-  if (areaToggle.getAttribute('aria-pressed') !== 'true') return;
   const detailZoom = camera.scale / camera.min >= 1.65;
   if (!detailZoom && !selected) return;
 
@@ -887,10 +915,6 @@ function drawAreaLabels() {
   areaKey.hidden = !labelLayer.children.length;
 }
 
-areaToggle.addEventListener('click', () => {
-  areaToggle.setAttribute('aria-pressed', String(areaToggle.getAttribute('aria-pressed') !== 'true'));
-  queueAreaLabels();
-});
 
 
 
@@ -947,21 +971,7 @@ refresh();
 new ResizeObserver(() => fitMap()).observe(map);
 
 
-const fullPlanButton = document.getElementById('load-full-plan');
-fullPlanButton.addEventListener('click', () => {
-  fullPlanButton.disabled = true;
-  fullPlanButton.textContent = 'Загрузка…';
-  const image = new Image();
-  image.onload = () => {
-    document.getElementById('basemap').setAttribute('href', image.src);
-    fullPlanButton.textContent = 'Детальный план открыт';
-  };
-  image.onerror = () => {
-    fullPlanButton.disabled = false;
-    fullPlanButton.textContent = 'Повторить загрузку';
-  };
-  image.src = 'atlas-full-43aaa1b8.png';
-});
+
 </script>
 </body>
 </html>
