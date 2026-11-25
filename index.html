@@ -179,57 +179,41 @@ button.data-row:hover { background:var(--soft); }
 .liquidity-key li { display:flex; gap:7px; align-items:center; min-height:17px; }
 .liquidity-note,.map-layer-status { margin:3px 0 5px; font-size:11px; color:var(--muted); }
 
-button.stage-trigger[aria-pressed="true"], .stage-date[aria-pressed="true"] { background:var(--accent); color:white; border-color:var(--accent); }
-.workspace.stage-mode { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; }
-.stage-mode #filters, .stage-mode #features, .stage-mode #analysis-overlays,
-.stage-mode .map-options, .stage-mode #area-key, .stage-active .head-actions > :not(.stage-trigger) { display:none; }
-.stage-panel { background:var(--paper); border-top:1px solid var(--line); padding:12px clamp(12px,3vw,40px); min-width:0; max-height:48dvh; overflow:auto; }
-.stage-bar, .stage-body { max-width:1200px; margin-inline:auto; }
-.stage-bar { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:14px; }
-.stage-years { min-width:0; display:grid; grid-template-columns:repeat(6,minmax(max-content,1fr)); gap:6px; overflow-x:auto; padding:4px; }
-.stage-date { position:relative; border:1px solid var(--line); background:#fff; border-radius:6px; min-height:39px; padding:6px 12px; font-weight:700; white-space:nowrap; }
-.stage-date:hover:not([aria-pressed="true"]) { background:var(--soft); }
-.stage-view { min-height:39px; min-width:157px; border:1px solid var(--line); background:#fff; border-radius:6px; padding:6px 8px; }
-.stage-body { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:8px 24px; margin-top:8px; padding-inline:4px; min-height:83px; }
-.stage-copy h2 { font:normal 21px/1.12 var(--display); margin-bottom:3px; }
-.stage-copy p, .stage-info p { font-size:13px; line-height:1.32; }
-.stage-info { align-self:start; border-left:2px solid var(--line); padding-left:11px; }
-.stage-info strong { display:block; margin-bottom:2px; }
-.stage-legend { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:5px 14px; font-size:11px; color:var(--muted); }
-.stage-legend span { display:inline-flex; align-items:center; gap:5px; }
-.stage-legend i { width:11px; height:9px; border:1px solid currentColor; border-radius:2px; }
-.stage-legend .new { color:#a94f1f; background:#e2a168; }
-.stage-legend .earlier { color:#62766c; background:#c7d4cb; }
-.stage-legend .temporary { color:#827a26; background:repeating-linear-gradient(135deg,#e9e3ad 0 2px,#fffef0 2px 4px); }
-.stage-legend .park { color:#346849; background:#b7d4b8; }
-.stage-legend .city { color:#4e85a4; border-style:dashed; }
-.stage-feature { cursor:pointer; }
-.stage-feature .stage-symbol { stroke-width:1.8; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
-.stage-feature.new .stage-symbol { fill:#eca266; fill-opacity:.57; stroke:#a94f1f; }
-.stage-feature.earlier .stage-symbol { fill:#a5b9ac; fill-opacity:.48; stroke:#62766c; }
-.stage-feature.temporary .stage-symbol { fill:url(#stage-hatch); stroke:#827a26; stroke-dasharray:3 3; }
-.stage-feature.park .stage-symbol { fill:#8ab98d; fill-opacity:.49; stroke:#346849; }
-.stage-feature.road .stage-symbol { fill:none; stroke-width:4.5; stroke-linecap:round; }
-.stage-feature.city .stage-symbol { stroke:#4e85a4; stroke-dasharray:5 4; }
-.stage-feature .stage-hit { fill:none; stroke:transparent; stroke-width:18; vector-effect:non-scaling-stroke; }
-.stage-feature:focus-visible .stage-symbol, .stage-feature:hover .stage-symbol,
-.stage-feature[aria-pressed="true"] .stage-symbol { stroke:#182d25; }
-.stage-label { fill:#1d3028; stroke:white; stroke-width:4; paint-order:stroke; stroke-linejoin:round;
-  text-anchor:middle; dominant-baseline:central; font:700 25px var(--sans); pointer-events:none; }
-@media (max-width:670px) {
-  .stage-trigger { min-width:56px; line-height:1.1; }
-  .masthead:has(.stage-trigger) .brandmark { display:none; }
-  .masthead:has(.stage-trigger) .subtitle { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-  .masthead:has(.stage-trigger) .brand > div { min-width:0; }
-  .stage-panel { padding:8px 9px 10px; }
-  .stage-bar { grid-template-columns:minmax(0,1fr); gap:4px; }
-  .stage-view { justify-self:end; min-height:31px; font-size:12px; }
-  .stage-date { min-height:37px; padding-inline:9px; font-size:13px; }
-  .stage-body { grid-template-columns:minmax(0,1fr); gap:6px; margin-top:5px; }
-  .stage-copy h2 { font-size:18px; }
-  .stage-copy p, .stage-info p { font-size:12px; }
-  .stage-copy p { min-height:4lh; }
-  .stage-legend { gap:4px 10px; }
+.app { grid-template-rows:auto minmax(0,1fr) auto; }
+.zone.after-year { filter:grayscale(1); }
+.map-fence,.map-gate { filter:grayscale(1); }
+.year-timeline {
+  display:grid; grid-template-columns:155px minmax(0,1fr) auto; align-items:center;
+  gap:12px 24px; padding:9px 26px max(9px,env(safe-area-inset-bottom)); background:var(--paper);
+  border-top:1px solid var(--line); box-shadow:0 -5px 20px #1e332408;
+}
+.timeline-title { display:grid; gap:1px; color:var(--muted); font-size:12px; }
+.timeline-title output { color:var(--accent); font:700 27px/1 var(--sans); font-variant-numeric:tabular-nums; }
+.timeline-control { min-width:0; }
+.timeline-slider {
+  --progress:50%; --handle:20px; appearance:none; margin:0; width:100%; height:28px;
+  background:transparent; cursor:pointer; display:block; accent-color:var(--accent); touch-action:pan-y;
+}
+.timeline-slider::-webkit-slider-runnable-track { height:6px; border-radius:12px; background:linear-gradient(to right,var(--accent) var(--progress),#d5ded5 var(--progress)); }
+.timeline-slider::-moz-range-track { height:6px; border-radius:12px; background:#d5ded5; }
+.timeline-slider::-moz-range-progress { height:6px; border-radius:12px; background:var(--accent); }
+.timeline-slider::-webkit-slider-thumb { appearance:none; width:var(--handle); height:var(--handle); margin-top:-7px; border-radius:50%; background:var(--accent); border:2px solid white; box-shadow:0 0 0 1px var(--accent); }
+.timeline-slider::-moz-range-thumb { box-sizing:border-box; width:var(--handle); height:var(--handle); border-radius:50%; background:var(--accent); border:2px solid white; box-shadow:0 0 0 1px var(--accent); }
+.timeline-ticks { display:flex; justify-content:space-between; margin:0 10px; color:var(--muted); font-size:11px; }
+.timeline-ticks button { position:relative; appearance:none; border:0; padding:0; width:0; background:none; color:inherit; }
+.timeline-ticks span { display:inline-block; min-width:27px; padding-block:4px; transform:translateX(-50%); }
+.timeline-ticks button[aria-current="true"] { color:var(--accent); font-weight:800; }
+.timeline-key { color:var(--muted); font-size:12px; white-space:nowrap; }
+@media (max-width:850px) {
+  .year-timeline { grid-template-columns:100px minmax(0,1fr); gap:4px 16px; padding-inline:16px; }
+  .timeline-key { grid-column:2; font-size:11px; }
+}
+@media (max-width:540px) {
+  .year-timeline { grid-template-columns:minmax(0,1fr); gap:1px; padding-inline:17px; padding-top:5px; }
+  .timeline-title { display:flex; align-items:center; gap:8px; }
+  .timeline-title output { font-size:20px; }
+  .timeline-slider { height:32px; }
+  .timeline-key { grid-column:1; white-space:normal; }
 }
 
 </style>
@@ -244,7 +228,6 @@ button.stage-trigger[aria-pressed="true"], .stage-date[aria-pressed="true"] { ba
       <div><h1>Дербеневская</h1><p class="subtitle">Ритейл, аменитис и инфраструктура · Рабочий лист v3</p></div>
     </div>
     <div class="head-actions">
-      <button class="button stage-trigger" id="stage-trigger" type="button" aria-pressed="false" aria-controls="stage-panel">Этапы ввода</button>
       <button class="button mobile-toggle" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filters">Фильтры</button>
       <button class="button" id="shares-trigger" type="button">Доли по схеме</button>
       <button class="button" id="list-trigger" type="button">Список зон</button>
@@ -293,7 +276,6 @@ button.stage-trigger[aria-pressed="true"], .stage-date[aria-pressed="true"] { ba
           <image id="basemap" x="0" y="0" pointer-events="none" href="atlas-preview-43aaa1b8.webp"></image>
           <g id="features"></g>
           <g id="analysis-overlays" aria-hidden="true" pointer-events="none"></g>
-          <g id="stage-map" hidden></g>
         </g>
         <g id="area-labels" aria-hidden="true"></g>
       </svg>
@@ -320,30 +302,21 @@ button.stage-trigger[aria-pressed="true"], .stage-date[aria-pressed="true"] { ba
         <dl>
           <div><dt>Площадь</dt><dd id="detail-area"></dd></div>
           <div><dt>Доступ</dt><dd id="detail-access"></dd></div>
+          <div><dt>На схеме этапности</dt><dd id="detail-year"></dd></div>
         </dl>
         <p class="note" id="detail-note" hidden></p>
         <p class="hint" id="detail-source"></p><button class="text-btn" id="nearby" type="button">Показать окружение</button>
       </aside>
     </main>
-    <section id="stage-panel" class="stage-panel" aria-label="Этапы ввода" hidden>
-      <div class="stage-bar">
-        <div class="stage-years" id="stage-years" role="group" aria-label="Период"></div>
-        <select id="stage-view" class="stage-view" aria-label="Показать на карте">
-          <option value="total">К этому году</option>
-          <option value="changes">Только изменения</option>
-        </select>
-      </div>
-      <div class="stage-body">
-        <div class="stage-copy" aria-live="polite"><h2 id="stage-title"></h2><p id="stage-note"></p></div>
-        <div class="stage-info" id="stage-info" aria-live="polite" hidden><strong id="stage-feature-title"></strong><p id="stage-feature-note"></p></div>
-        <div class="stage-legend" aria-label="Условные обозначения">
-          <span><i class="new"></i>Появляется на схеме</span><span><i class="earlier"></i>Показано ранее</span>
-          <span><i class="temporary"></i>Временное благоустройство</span><span><i class="city"></i>Городские решения ППТ</span><span><i class="park"></i>Парк</span>
-          <span>Границы ориентировочные</span>
-        </div>
-      </div>
-    </section>
   </div>
+  <section class="year-timeline" aria-label="Этапность ввода">
+    <label class="timeline-title" for="delivery-year"><span>Этапы ввода</span><output id="delivery-year-label" for="delivery-year">2031</output></label>
+    <div class="timeline-control">
+      <input id="delivery-year" class="timeline-slider" type="range" min="2027" max="2034" step="1" value="2031" aria-label="Год ввода" aria-describedby="delivery-key">
+      <div id="delivery-ticks" class="timeline-ticks" aria-label="Выбор года"></div>
+    </div>
+    <p class="timeline-key" id="delivery-key">Серым — позже выбранного года или срок не указан</p>
+  </section>
 </div>
 <dialog id="data-dialog" aria-labelledby="dialog-title">
   <div class="dialog-head"><h2 id="dialog-title"></h2><form method="dialog"><button class="close" aria-label="Закрыть окно">×</button></form></div>
@@ -459,6 +432,7 @@ function showDetails(zone) {
   const category = categories.get(zone.category);
   get('detail-swatch').style.setProperty('--tone', category.color);
   get('detail-category').textContent = category.name;
+  updateZoneYear(zone);
   get('detail-title').textContent = titleOf(zone);
   get('detail-address').textContent = [locationOf(zone), zone.address].filter(Boolean).join(' · ');
   const status = {mapped:zone.revision === 'Сохранено' ? 'Сохранено по плану' : zone.revision, uncertain:'Границы уточняются', alternative:'Альтернативный вариант'};
@@ -787,8 +761,7 @@ svg.addEventListener('pointerdown', event => {
   const group = event.target.closest('.zone');
   svg.setPointerCapture(event.pointerId);
   pointers.set(event.pointerId, localPoint(event));
-  const stageItem = event.target.closest('[data-stage-feature]');
-  beginGesture(stageItem ? stageItem.dataset.stageFeature : group ? group.dataset.id : null);
+  beginGesture(group ? group.dataset.id : null);
 });
 svg.addEventListener('pointermove', event => {
   if (!pointers.has(event.pointerId)) return;
@@ -816,8 +789,7 @@ function endGesture(event) {
   const shouldSelect = event.type === 'pointerup' && !gesture.moved && gesture.target;
   pointers.delete(event.pointerId);
   if (shouldSelect) {
-    if (stageMode) selectStageFeature(shouldSelect);
-    const zone = stageMode ? null : visible.find(item => item.id === shouldSelect);
+    const zone = visible.find(item => item.id === shouldSelect);
     if (zone) {
       showDetails(zone);
       toggleMobileFilters(false);
@@ -884,7 +856,7 @@ function queueAreaLabels() {
 function drawAreaLabels() {
   labelLayer.replaceChildren();
   areaKey.hidden = true;
-  if (stageMode || areaToggle.getAttribute('aria-pressed') !== 'true') return;
+  if (areaToggle.getAttribute('aria-pressed') !== 'true') return;
   const detailZoom = camera.scale / camera.min >= 1.65;
   if (!detailZoom && !selected) return;
 
@@ -922,148 +894,54 @@ areaToggle.addEventListener('click', () => {
 
 
 
-// Period and first appearance on the schematic in «этапность ввода.pptx».
-const stagePeriods = [
-  ['2027','HIGH LIFE и OPUS',
-    'Ритейл HIGH LIFE и OPUS показан в горизонте 2027–2031. Разрешение на ввод второй очереди HIGH LIFE запланировано на IV квартал 2027.'],
-  ['2028–2030','Временное благоустройство',
-    'До 2030 года на схеме показано временное благоустройство. HIGH LIFE и OPUS остаются ориентирами для ритейла.'],
-  ['2031','Первые кварталы и изменение доступа',
-    'Появляются этапы 1.1, 1.2, 2.1 и 2.2. Временное благоустройство заканчивается, короткий путь между HIGH LIFE и OPUS исчезает. В 2031–2032 годах отмечен риск блокировки стрит-ритейла этапов 2.2 и 4.2.'],
-  ['2032','Новые кварталы и школа',
-    'На схеме появляются Аремкуз 2.3, Кораллы 4.2 и школа на 1 000 мест. Путь от HIGH LIFE до школы в презентации не определён. Отмечен риск для доступа к стрит-ритейлу этапов 2.2 и 4.2.'],
-  ['2033','Связь кварталов',
-    'Добавляются Снежная королева 4.1, Аремкуз 3 и Две ладьи 5.1. На схеме появляется пятый этап развития улиц и отдельно показано городское решение ППТ.'],
-  ['2034','Парк 1,6 га',
-    'Итоговая схема выделяет парк площадью 1,6 га. Год указан для схемы сценария.']
-];
-// Points are digitized in the common 720 × 664 preview of the site basemap.
-// Outlines indicate areas on the master plan, rather than cadastral boundaries.
-const stageFeatures = [
-  {id:'high', from:0, label:'HIGH LIFE', title:'ЖК HIGH LIFE', at:[90,446], points:[[22,281],[152,331],[147,401],[161,432],[196,461],[197,487],[179,511],[149,528],[58,525],[11,513]], note:'Ритейл показан в 2027–2031. Плановый РнВ 2-й очереди — IV квартал 2027.'},
-  {id:'opus', from:0, label:'OPUS', title:'ЖК OPUS', at:[579,386], points:[[529,295],[656,370],[688,416],[711,495],[711,510],[461,364]], note:'Ритейл показан в горизонте 2027–2031. Дата ввода на этом слайде не приведена.'},
-  {id:'opus-office', from:0, label:'БЦ', title:'БЦ OPUS', at:[475,322], points:[[458,270],[512,302],[459,363],[423,340]], note:'Бизнес-центр отмечен отдельным контуром на всех схемах.'},
-  {id:'temp', from:0, until:1, kind:'temporary', label:'Временное', title:'Временное благоустройство', at:[288,238], points:[[248,197],[322,215],[351,238],[330,264],[293,264],[263,253],[239,230]], note:'Временное благоустройство предусмотрено до 2030 года. По сценарию в 2031 году общественная зона исчезает.'},
-  {id:'11', from:2, label:'1.1', place:'north-high', at:[110,256], points:[[56,211],[100,227],[156,242],[174,245],[159,305],[37,278]]},
-  {id:'12', from:2, label:'1.2', place:'levadia-12', at:[113,185], points:[[57,139],[190,171],[179,232],[52,193]]},
-  {id:'21', from:2, label:'2.1', place:'south-high', at:[107,550], points:[[56,534],[91,527],[155,527],[145,583],[87,569],[30,552]]},
-  {id:'22', from:2, label:'2.2', place:'west-park', at:[216,285], points:[[203,248],[252,267],[230,324],[182,306]], note:'На схеме 2031. В 2031–2032 годах отмечен риск блокировки доступа к стрит-ритейлу.'},
-  {id:'23', from:3, label:'2.3', place:'north-east', at:[285,144], points:[[251,55],[367,97],[343,179],[226,149]]},
-  {id:'42', from:3, label:'4.2', place:'corals-42', at:[184,376], points:[[175,317],[234,343],[211,406],[158,393]], note:'На схеме 2032. В 2031–2032 годах отмечен риск блокировки доступа к стрит-ритейлу.'},
-  {id:'school', from:3, label:'СОШ', place:'school', at:[503,474], points:[[434,371],[481,400],[566,457],[548,522],[491,516],[438,480],[451,439],[408,413]], note:'На схеме 2032. Путь от HIGH LIFE к школе в презентации не определён.'},
-  {id:'41', from:4, label:'4.1', place:'north-west', at:[198,98], points:[[176,19],[253,48],[225,142],[146,121]]},
-  {id:'3', from:4, label:'3', place:'aremkuz-3', at:[367,168], points:[[369,99],[400,111],[384,167],[409,194],[380,224],[347,196]]},
-  {id:'51', from:4, label:'5.1', place:'two-boats-51', at:[259,409], points:[[264,343],[316,361],[269,448],[224,425]]},
-  {id:'park', from:5, kind:'park', label:'Парк 1,6 га', title:'Парк 1,6 га', at:[297,270], points:[[245,204],[326,192],[362,216],[327,251],[307,281],[307,301],[282,324],[250,318],[233,300],[247,259],[229,238]], note:'Парк обозначен на итоговой схеме 2034 года. Площадь 1,6 га взята из презентации.'},
-  {id:'road-1', from:2, kind:'road', title:'Развитие улиц, этап 1', points:[[51,127],[206,172],[194,229],[176,290],[157,350]], note:'Срок по презентации — июль 2031.'},
-  {id:'road-2', from:2, kind:'road', title:'Развитие улиц, этап 2', points:[[172,502],[159,534],[141,574]], note:'Срок по презентации — август 2031.'},
-  {id:'road-3', from:3, kind:'road', title:'Развитие улиц, этап 3', points:[[157,350],[148,390],[150,412],[169,432],[193,449],[199,467],[192,484],[172,502]], note:'Срок по презентации — март 2032.'},
-  {id:'road-4', from:3, kind:'road', title:'Развитие улиц, этап 4', points:[[249,47],[233,99],[206,172]], note:'Срок по презентации — август 2032.'},
-  {id:'road-5a', from:4, kind:'road', title:'Развитие улиц, этап 5', points:[[21,279],[49,283],[105,303],[168,322]], note:'Срок по презентации — декабрь 2033.'},
-  {id:'road-5b', from:4, kind:'road', title:'Развитие улиц, этап 5', points:[[307,373],[325,326],[352,288],[369,265]], note:'Срок по презентации — декабрь 2033.'},
-  {id:'city', from:4, kind:'city', title:'Городское решение ППТ', points:[[5,573],[26,563],[54,558],[88,565],[142,583],[195,604],[239,621]], note:'ППТ ЛО № 644-ПП от 27.03.2025. Линия показана на схеме 2033 года. Дата реализации не указана.'}
-];
 
-const stagePanel = get('stage-panel');
-const stageLayer = get('stage-map');
-const stageTrigger = get('stage-trigger');
-const stageView = get('stage-view');
-const stageFeaturesById = new Map(stageFeatures.map(feature => [feature.id, feature]));
-let stageMode = false;
-let stagePeriod = 2;
-let selectedStageFeature = null;
-const stageButtons = stagePeriods.map(([period], index) => {
-  const button = htmlElement('button', 'stage-date', period);
-  button.type = 'button';
-  button.addEventListener('click', () => {
-    stagePeriod = index;
-    updateStages();
+// First appearance of each quarter on the source staging plans.
+const deliveryYears = {
+  high:2027, opus:2027, 'office-opus':2027,
+  'north-high':2031, 'levadia-12':2031, 'south-high':2031, 'k26-upper':2031,
+  'west-park':2031, 'corals-upper':2031,
+  'north-east':2032, 'corals-42':2032, school:2032,
+  'north-west':2033, 'aremkuz-3':2033, 'two-boats-51':2033
+};
+const deliverySlider = get('delivery-year');
+const deliveryTicks = get('delivery-ticks');
+const firstYear = Number(deliverySlider.min);
+const lastYear = Number(deliverySlider.max);
+
+function updateZoneYear(zone) {
+  const year = deliveryYears[zone.place];
+  get('detail-year').textContent = year || 'Год не указан';
+  const marker = get('detail-swatch');
+  marker.style.filter = !year || year > deliverySlider.valueAsNumber ? 'grayscale(1)' : '';
+}
+
+function updateDeliveryYear() {
+  const year = deliverySlider.valueAsNumber;
+  get('delivery-year-label').value = year;
+  deliverySlider.style.setProperty('--progress', ((year-firstYear)/(lastYear-firstYear)*100) + '%');
+  for (const tick of deliveryTicks.children) {
+    tick.setAttribute('aria-current', String(Number(tick.value) === year));
+  }
+  for (const zone of atlas.zones) {
+    const introduced = deliveryYears[zone.place];
+    zoneNodes.get(zone.id).classList.toggle('after-year', !introduced || introduced > year);
+  }
+  if (selected) updateZoneYear(selected);
+}
+
+for (let year = firstYear; year <= lastYear; year++) {
+  const tick = htmlElement('button');
+  tick.type = 'button';
+  tick.value = year;
+  tick.append(htmlElement('span', '', year));
+  tick.addEventListener('click', () => {
+    deliverySlider.value = year;
+    updateDeliveryYear();
   });
-  get('stage-years').append(button);
-  return button;
-});
-
-function stageFeatureName(feature) {
-  return feature.title || places.get(feature.place).name;
+  deliveryTicks.append(tick);
 }
-
-function selectStageFeature(id) {
-  const feature = stageFeaturesById.get(id);
-  selectedStageFeature = feature?.id ?? null;
-  for (const node of stageLayer.querySelectorAll('[data-stage-feature]')) {
-    node.setAttribute('aria-pressed', String(node.dataset.stageFeature === selectedStageFeature));
-  }
-  get('stage-info').hidden = !feature;
-  if (!feature) return;
-  get('stage-feature-title').textContent = stageFeatureName(feature);
-  get('stage-feature-note').textContent = feature.note || 'Впервые показан на схеме за ' + stagePeriods[feature.from][0] + ' год.';
-}
-
-function updateStages() {
-  const [period, title, description] = stagePeriods[stagePeriod];
-  get('stage-title').textContent = title;
-  get('stage-note').textContent = description;
-  get('map-context').textContent = 'Этапы ввода · ' + period;
-  stageButtons.forEach((button, index) => button.setAttribute('aria-pressed', String(index === stagePeriod)));
-
-  const defs = svgElement('defs', {});
-  const hatch = svgElement('pattern', {id:'stage-hatch', width:14, height:14, patternUnits:'userSpaceOnUse', patternTransform:'rotate(40)'});
-  hatch.append(svgElement('rect', {width:14, height:14, fill:'#fffad9', 'fill-opacity':.63}),
-               svgElement('path', {d:'M 0 0 V 14', stroke:'#b2a744', 'stroke-width':4}));
-  defs.append(hatch);
-  stageLayer.replaceChildren(defs);
-  selectStageFeature(null);
-
-  const board = svgElement('g', {transform:'scale(' + atlas.width / 720 + ' ' + atlas.height / 664 + ')'});
-  stageLayer.append(board);
-  for (const feature of stageFeatures) {
-    if (feature.from > stagePeriod || (feature.until !== undefined && stagePeriod > feature.until)) continue;
-    if (stageView.value === 'changes' && feature.from !== stagePeriod && feature.kind !== 'temporary') continue;
-    const line = feature.kind === 'road' || feature.kind === 'city';
-    const kind = feature.kind || 'block';
-    const group = svgElement('g', {
-      class:'stage-feature ' + (feature.from === stagePeriod ? 'new ' : 'earlier ') + (line ? 'road ' : '') + kind,
-      'data-stage-feature':feature.id, tabindex:0, role:'button',
-      'aria-label':stageFeatureName(feature), 'aria-pressed':'false'
-    });
-    const tag = line ? 'polyline' : 'polygon';
-    const points = feature.points.map(point => point.join(',')).join(' ');
-    group.append(svgElement(tag, {class:'stage-symbol', points}));
-    if (line) group.append(svgElement(tag, {class:'stage-hit', points}));
-    if (feature.at) {
-      const text = svgElement('text', {class:'stage-label', x:feature.at[0], y:feature.at[1]});
-      text.textContent = feature.label;
-      group.append(text);
-    }
-    group.addEventListener('keydown', event => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      event.stopPropagation();
-      selectStageFeature(feature.id);
-    });
-    board.append(group);
-  }
-}
-
-stageTrigger.addEventListener('click', () => {
-  stageMode = !stageMode;
-  stagePanel.hidden = !stageMode;
-  stageLayer.toggleAttribute('hidden', !stageMode);
-  map.parentElement.classList.toggle('stage-mode', stageMode);
-  get('stage-trigger').closest('.masthead').classList.toggle('stage-active', stageMode);
-  stageTrigger.setAttribute('aria-pressed', String(stageMode));
-  stageTrigger.textContent = stageMode ? 'Карта ритейла' : 'Этапы ввода';
-  if (stageMode) {
-    toggleMobileFilters(false);
-    showDetails(null);
-    updateStages();
-    stageButtons[stagePeriod].scrollIntoView({block:'nearest', inline:'center'});
-  } else {
-    refresh();
-  }
-  fitMap();
-});
-stageView.addEventListener('change', updateStages);
+deliverySlider.addEventListener('input', updateDeliveryYear);
+updateDeliveryYear();
 
 refresh();
 new ResizeObserver(() => fitMap()).observe(map);
