@@ -213,19 +213,27 @@ button.data-row:hover { background:var(--soft); }
 .map-column { display:grid; grid-template-rows:auto minmax(0,1fr); min-width:0; min-height:0; }
 .map-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:7px; padding:9px 14px;
   background:var(--paper); border-bottom:1px solid var(--line); }
-#concept-trigger { color:var(--accent); background:#edf3ec; border-color:#bdcfbf; }
-#concept-trigger:hover { background:#e2ece2; }
-#concept-dialog { width:min(842px,calc(100% - 28px)); max-height:90dvh; }
-#concept-dialog .dialog-head { gap:10px; }
-#concept-dialog h2 { font-size:clamp(19px,4.5vw,28px); }
-.concept-plan { overflow:auto; margin-top:12px; }
-.concept-plan img { display:block; width:100%; height:auto; }
-#concept-full { display:inline-block; color:var(--accent); margin-top:10px; font-size:13px; }
 @media (max-width:670px) {
   .map-toolbar { gap:4px; padding:6px 8px; }
   .map-toolbar .button { min-height:35px; }
-  #concept-dialog { padding:12px; }
-  .concept-plan img { min-width:440px; }
+}
+
+
+.concept-toolbar { row-gap:5px; }
+.concept-toolbar .concept-toggle {
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap; min-height:34px; font-size:13px;
+}
+.concept-toggle .swatch { border:1px solid var(--edge); width:12px; height:12px; }
+.concept-toolbar .concept-toggle[aria-pressed="true"] {
+  background:color-mix(in srgb,var(--tone) 28%,var(--paper)); border-color:var(--edge);
+}
+.concept-fill { stroke-width:1.45; fill-opacity:.33; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+.concept-ring { fill:none; stroke-width:1.25; stroke-dasharray:4 3; vector-effect:non-scaling-stroke; }
+.concept-text { font:700 7.2px var(--sans); fill:#23402c; stroke:white; stroke-width:1.5px;
+  paint-order:stroke; stroke-linejoin:round; text-anchor:middle; dominant-baseline:central; }
+@media (max-width:670px) {
+  .concept-toolbar .concept-toggle { padding:4px 6px; min-height:31px; font-size:11.5px; gap:4px; }
+  .concept-toggle .swatch { width:10px; height:10px; }
 }
 
 </style>
@@ -279,16 +287,13 @@ button.data-row:hover { background:var(--soft); }
       </div>
     </aside>
     <main class="map-column">
-      <div class="map-toolbar" role="group" aria-label="Материалы карты">
-        <button class="button" id="concept-trigger" type="button" aria-haspopup="dialog">Концептуальное зонирование</button>
-        <button class="button" id="shares-trigger" type="button">Доли по схеме</button>
-        <button class="button" id="list-trigger" type="button">Список зон</button>
-      </div>
+      <div class="map-toolbar concept-toolbar" id="concept-toolbar" role="group" aria-label="Концептуальное зонирование"></div>
       <div class="map" id="map">
       <svg id="viewport" role="group" tabindex="0" aria-label="План квартала. Стрелки перемещают карту, плюс и минус меняют масштаб. Зоны доступны с клавиатуры через список.">
         <g id="world" style="isolation:isolate">
           <image id="basemap" x="0" y="0" pointer-events="none" href="atlas-preview-43aaa1b8.webp"></image>
           <g id="features"></g>
+          <g clip-path="url(#concept-clip)" pointer-events="none" aria-hidden="true"><g id="concept-layer"></g></g>
           <g id="analysis-overlays" aria-hidden="true" pointer-events="none"></g>
         </g>
         <g id="area-labels" aria-hidden="true"></g>
@@ -329,11 +334,6 @@ button.data-row:hover { background:var(--soft); }
     <p class="timeline-key" id="delivery-key">Серым — позже выбранного года или срок не указан</p>
   </section>
 </div>
-<dialog id="concept-dialog" aria-labelledby="concept-title">
-  <div class="dialog-head"><h2 id="concept-title">Концептуальное зонирование</h2><form method="dialog"><button class="close" aria-label="Закрыть схему">×</button></form></div>
-  <div class="concept-plan" tabindex="0" aria-label="План концептуального зонирования"><img id="concept-image" alt="Схема концептуального зонирования Дербеневской с легендой"></div>
-  <a id="concept-full" href="concept-zoning.png" target="_blank" rel="noopener">Открыть схему в полном размере</a>
-</dialog>
 <dialog id="data-dialog" aria-labelledby="dialog-title">
   <div class="dialog-head"><h2 id="dialog-title"></h2><form method="dialog"><button class="close" aria-label="Закрыть окно">×</button></form></div>
   <p class="lead" id="dialog-info"></p>
@@ -575,21 +575,6 @@ function openList() {
   dialog.showModal();
 }
 
-function openShares() {
-  get('dialog-title').textContent = 'Доли по исходной схеме';
-  get('dialog-info').textContent = 'Значения из легенды слайда «Функциональное зонирование». Эти доли относятся к предыдущему составу функций и не пересчитывались по новой схеме.';
-  const list = get('dialog-list');
-  list.replaceChildren();
-  for (const category of atlas.categories.filter(category => category.share != null)) {
-    const item = htmlElement('li');
-    const row = htmlElement('div', 'data-row');
-    row.append(swatch(category.color), htmlElement('span', '', category.name),
-      htmlElement('span', 'value', category.share + '%'));
-    item.append(row);
-    list.append(item);
-  }
-  dialog.showModal();
-}
 
 get('basemap').setAttribute('width', atlas.width);
 get('basemap').setAttribute('height', atlas.height);
@@ -758,15 +743,7 @@ get('nearby').addEventListener('click', () => {
   fitMap(extent([selected], 215), {reserveDetail:true, max:1.6});
 });
 get('filter-toggle').addEventListener('click', () => toggleMobileFilters(!get('filters').classList.contains('mobile-open')));
-get('list-trigger').addEventListener('click', openList);
-const conceptDialog = get('concept-dialog');
-get('concept-trigger').addEventListener('click', () => {
-  toggleMobileFilters(false);
-  get('concept-image').src = get('concept-full').href;
-  conceptDialog.showModal();
-});
 get('sidebar-list').addEventListener('click', openList);
-get('shares-trigger').addEventListener('click', openShares);
 
 function beginGesture(target = null) {
   const [first, second] = pointers.values();
@@ -846,7 +823,7 @@ svg.addEventListener('keydown', event => {
   }
 });
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && !dialog.open && !conceptDialog.open) {
+  if (event.key === 'Escape' && !dialog.open) {
     if (!detail.hidden) showDetails(null);
     else toggleMobileFilters(false);
   }
@@ -966,6 +943,74 @@ for (let year = firstYear; year <= lastYear; year++) {
 }
 deliverySlider.addEventListener('input', updateDeliveryYear);
 updateDeliveryYear();
+
+
+// Contours traced from the concept sheet. Use the sheet-to-plan alignment
+// from matching streets and fixed buildings, then the atlas coordinate scale.
+const conceptZones = [
+  {name:'Городской перекрёсток', description:'Активный транзитный трафик и рекреация',
+    color:'#f28b93', edge:'#a54e5e', paths:[
+      'M429 18 L495 40 L461 103 L469 107 L457 154 L447 158 L435 202 L380 194 L392 111 Z',
+      'M571 201 L616 222 L601 246 L578 235 L578 224 L570 220 L562 236 L551 231 Z',
+      'M514 228 L551 239 L539 274 L510 266 L513 253 L505 249 Z'
+    ]},
+  {name:'Городская гостиная', description:'Входные ворота в проект, соседство и встречи',
+    color:'#eaa067', edge:'#a0572c', paths:[
+      'M472 36 L600 79 L585 101 L549 87 L533 109 L503 101 L482 163 L449 151 L456 128 L448 121 L460 100 L446 95 Z',
+      'M381 194 L434 205 L424 233 L419 275 L415 328 L375 323 Z'
+    ]},
+  {name:'Парковая зона', description:'Бесшовная парковая зона, с активной и тихой частями',
+    color:'#91b78b', edge:'#48764c', paths:[
+      'M549 82 L591 99 L578 126 L585 135 L579 153 L611 145 L619 154 L593 173 L563 203 L542 228 L525 221 L515 249 L506 266 L467 283 L466 260 L476 228 L493 188 L493 163 L503 124 L524 116 Z'
+    ]},
+  {name:'Резидентская зона', description:'Daily use и сервисный контур',
+    color:'#ebc0a2', edge:'#a17356', paths:[
+      'M449 151 L482 163 L502 164 L493 190 L476 229 L464 265 L468 283 L491 293 L533 276 L512 321 L480 346 L458 339 L454 366 L385 348 L417 334 L415 328 L421 270 L426 227 L434 203 Z'
+    ]},
+  {name:'Офисный кластер', description:'Офисный кластер',
+    color:'#87b8d9', edge:'#477d9f', paths:[
+      'M640 205 L690 233 L677 251 L629 225 Z'
+    ]},
+  {name:'De luxe', description:'Резидентская зона и гостиная для внешней аудитории',
+    color:'#b39acb', edge:'#79578e', paths:[
+      'M686 244 L795 306 L793 317 L680 252 Z'
+    ]}
+];
+const conceptToolbar = get('concept-toolbar');
+const conceptLayer = get('concept-layer');
+const conceptClip = svgElement('clipPath', {id:'concept-clip'});
+conceptClip.append(svgElement('rect', {width:atlas.width,height:atlas.height}));
+clips.append(conceptClip);
+conceptLayer.setAttribute('transform', 'scale(' + atlas.width/720 + ' ' + atlas.height/664 + ') matrix(1.6473 -.00005 -.00173 1.7756 -600.14 -56.11)');
+
+for (const zone of conceptZones) {
+  const group = svgElement('g', {hidden:''});
+  for (const path of zone.paths) {
+    group.append(svgElement('path', {class:'concept-fill', d:path, fill:zone.color, stroke:zone.edge}));
+  }
+  if (zone.name === 'Парковая зона') {
+    for (const [x,y,r,label] of [[530,158,58,'Активная зона'],[513,239,56,'Тихая зона парка']]) {
+      group.append(svgElement('circle', {class:'concept-ring', cx:x, cy:y, r, stroke:zone.edge}));
+      const text = svgElement('text', {class:'concept-text', x, y});
+      text.textContent = label;
+      group.append(text);
+    }
+  }
+  conceptLayer.append(group);
+  const button = htmlElement('button', 'button concept-toggle');
+  button.type = 'button';
+  button.title = zone.description;
+  button.setAttribute('aria-pressed','false');
+  button.style.setProperty('--tone',zone.color);
+  button.style.setProperty('--edge',zone.edge);
+  button.append(swatch(zone.color),htmlElement('span','',zone.name));
+  button.addEventListener('click', () => {
+    const active = group.hasAttribute('hidden');
+    group.toggleAttribute('hidden', !active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  conceptToolbar.append(button);
+}
 
 refresh();
 new ResizeObserver(() => fitMap()).observe(map);
