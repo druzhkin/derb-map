@@ -301,6 +301,8 @@ button.data-row:hover { background:var(--soft); }
 .balance-filters select { width:100%; min-width:0; border-radius:6px; border:1px solid var(--line); padding:8px 26px 8px 8px; color:var(--ink); background-color:#fff; font:13px var(--sans); }
 .balance-filters select:disabled { opacity:.55; }
 .balance-reset { justify-self:end; align-self:end; padding-bottom:8px; }
+.balance-filters .balance-mansions { grid-column:span 2; display:flex; align-items:center; align-self:center; gap:7px; color:var(--ink); }
+.balance-mansions input { margin:0; width:16px; height:16px; accent-color:#214638; }
 .balance-summary { padding:17px 29px; display:grid; gap:9px; grid-template-columns:repeat(3,minmax(0,1fr)); }
 .balance-stat { display:grid; align-content:start; gap:5px; padding:12px 14px; border:1px solid var(--line); background:#fff; border-radius:8px; min-width:0; }
 .balance-stat:first-child { border-color:#c4d3c5; background:#eff4ee; }
@@ -495,6 +497,7 @@ button.data-row:hover { background:var(--soft); }
     <label>Год<select id="balance-year"></select></label>
     <label>Сравнить с годом<select id="balance-compare"><option value="">Без сравнения</option></select></label>
     <button type="button" class="text-btn balance-reset" id="balance-reset">Сбросить фильтры</button>
+    <label class="balance-mansions"><input type="checkbox" id="balance-mansions" checked>Учитывать особняки</label>
   </div>
   <div class="balance-summary" id="balance-summary" aria-live="polite"></div>
   <section class="balance-chart" aria-labelledby="balance-chart-title">
@@ -502,6 +505,7 @@ button.data-row:hover { background:var(--soft); }
       <div><h3 id="balance-chart-title">Распределение по функциям</h3><p id="balance-chart-context"></p></div>
       <div class="balance-metrics" role="group" aria-label="Показатель диаграммы">
         <button class="button" type="button" data-balance-metric="area" aria-pressed="true">Площадь</button>
+        <button class="button" type="button" data-balance-metric="share" aria-pressed="false">Доля, %</button>
         <button class="button" type="button" data-balance-metric="count" aria-pressed="false">Количество</button>
       </div>
     </div>
@@ -1346,6 +1350,7 @@ const balanceCategory = get('balance-category');
 const balancePeriod = get('balance-period');
 const balanceYear = get('balance-year');
 const balanceCompare = get('balance-compare');
+const balanceMansions = get('balance-mansions');
 const balanceAreaKinds = new Set(['source','estimate','opus']);
 const balanceExcluded = new Set(['parking','upper-terrace']);
 const balanceNumber = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:1});
@@ -1364,7 +1369,8 @@ function balanceByFloor(zone) {
   return !balanceFloor.value || (zone.floor || 'ground') === balanceFloor.value;
 }
 function balanceUnits() {
-  return atlas.zones.filter(zone => zone.status === 'mapped' && zone.path && !balanceExcluded.has(zone.category) && balanceInProject(zone) && balanceByFloor(zone));
+  return atlas.zones.filter(zone => zone.status === 'mapped' && zone.path && !balanceExcluded.has(zone.category) &&
+    (balanceMansions.checked || zone.category!=='mansions') && balanceInProject(zone) && balanceByFloor(zone));
 }
 function balanceOptions(select, all, items, requested=select.value) {
   select.replaceChildren(new Option(all,''));
@@ -1416,10 +1422,16 @@ function balanceSummarize(zones) {
 function balanceAreaText(stats) {
   return stats.known ? (stats.approximate ? '≈ ' : '')+balanceNumber.format(stats.area)+' м²' : '—';
 }
-function balanceQuant(stats) {
+function balanceQuant(stats, total) {
+  if (balanceMetric==='share') return total ? 100*stats.area/total : 0;
   return balanceMetric==='area' ? stats.area : stats.count;
 }
-function balanceMetricText(stats) {
+function balanceMetricText(stats, total) {
+  if (balanceMetric==='share') {
+    if (!total || (stats.count && !stats.known)) return '—';
+    const share=balanceQuant(stats,total);
+    return (share>0 && share<.05 ? '< 0,1' : balanceNumber.format(share))+' %';
+  }
   return balanceMetric==='area' ? balanceAreaText(stats) : balanceNumber.format(stats.count);
 }
 function balanceNiceMax(maximum) {
@@ -1436,15 +1448,15 @@ function balanceStat(label, value, hint) {
   if (hint) card.append(htmlElement('span','balance-stat-hint',hint));
   return card;
 }
-function balanceBar(stats, scale, category, comparison) {
+function balanceBar(stats, total, scale, category, comparison) {
   const lane=htmlElement('div','balance-lane'+(comparison?' comparison':''));
   const track=htmlElement('div','balance-track');
   track.setAttribute('aria-hidden','true');
   const bar=htmlElement('i','balance-bar');
-  bar.style.setProperty('--balance-width',(scale ? 100*balanceQuant(stats)/scale : 0)+'%');
+  bar.style.setProperty('--balance-width',(scale ? 100*balanceQuant(stats,total)/scale : 0)+'%');
   bar.style.setProperty('--balance-tone',category.color);
   track.append(bar);
-  lane.append(track,htmlElement('span','balance-row-value',balanceMetricText(stats)));
+  lane.append(track,htmlElement('span','balance-row-value',balanceMetricText(stats,total)));
   return lane;
 }
 function balanceRender() {
@@ -1453,9 +1465,14 @@ function balanceRender() {
   balanceCompare.disabled=!timeScoped;
   const year=Number(balanceYear.value);
   const compareYear=timeScoped && balanceCompare.value && Number(balanceCompare.value)!==year ? Number(balanceCompare.value) : null;
-  const pool=balanceUnits().filter(zone=>(!balancePlace.value || zone.place===balancePlace.value) && balanceMatchesCategory(zone));
-  const chosen=pool.filter(zone=>balanceInPeriod(zone,year));
-  const comparison=compareYear ? pool.filter(zone=>balanceInPeriod(zone,compareYear)) : [];
+  const scope=balanceUnits().filter(zone=>!balancePlace.value || zone.place===balancePlace.value);
+  const primaryScope=scope.filter(zone=>balanceInPeriod(zone,year));
+  const secondaryScope=compareYear ? scope.filter(zone=>balanceInPeriod(zone,compareYear)) : [];
+  const pool=scope.filter(balanceMatchesCategory);
+  const chosen=primaryScope.filter(balanceMatchesCategory);
+  const comparison=secondaryScope.filter(balanceMatchesCategory);
+  const primaryTotal=balanceSummarize(primaryScope);
+  const secondaryTotal=balanceSummarize(secondaryScope);
   const summary=balanceSummarize(chosen);
   const compareSummary=compareYear ? balanceSummarize(comparison) : null;
   const withoutDates=balanceSummarize(pool.filter(zone=>!balanceYearOf(zone)));
@@ -1469,7 +1486,8 @@ function balanceRender() {
     balanceStat('Помещений',balanceNumber.format(summary.count),compareSummary ? 'Сравнение · '+balanceNumber.format(compareSummary.count) : ''),
     balanceStat('Без срока ввода',balanceNumber.format(withoutDates.count),balanceAreaText(withoutDates)==='—' ? 'В пределах фильтров территории и функций' : balanceAreaText(withoutDates)+' в пределах фильтров'),
   );
-  get('balance-chart-context').textContent=periodName+' · '+(balanceMetric==='area'?'площадь, м²':'количество помещений');
+  get('balance-chart-context').textContent=periodName+' · '+({area:'площадь, м²',share:'доля общей площади, %',count:'количество помещений'}[balanceMetric])+
+    (balanceMetric==='share' && primaryTotal.area ? ' · 100% = '+balanceAreaText(primaryTotal) : '');
   const legend=get('balance-chart-legend');
   legend.hidden=!compareYear;
   if (compareYear) {
@@ -1482,11 +1500,13 @@ function balanceRender() {
     primary:balanceSummarize(chosen.filter(zone=>zone.category===category.key)),
     secondary:balanceSummarize(comparison.filter(zone=>zone.category===category.key)),
   })).filter(row=>row.primary.count || row.secondary.count)
-    .sort((a,b)=>balanceQuant(b.primary)-balanceQuant(a.primary)||balanceQuant(b.secondary)-balanceQuant(a.secondary)||a.category.name.localeCompare(b.category.name,'ru'));
-  const scale=balanceNiceMax(Math.max(0,...items.flatMap(row=>[balanceQuant(row.primary),balanceQuant(row.secondary)])));
+    .sort((a,b)=>balanceQuant(b.primary,primaryTotal.area)-balanceQuant(a.primary,primaryTotal.area)||
+      balanceQuant(b.secondary,secondaryTotal.area)-balanceQuant(a.secondary,secondaryTotal.area)||a.category.name.localeCompare(b.category.name,'ru'));
+  const scale=balanceMetric==='share' ? (primaryTotal.area || secondaryTotal.area ? 100 : 0) :
+    balanceNiceMax(Math.max(0,...items.flatMap(row=>[balanceQuant(row.primary),balanceQuant(row.secondary)])));
   const axis=get('balance-axis');
   axis.hidden=!scale;
-  axis.replaceChildren(...[0,1,2,3,4].map(n=>htmlElement('span','',balanceNumber.format(scale*n/4))));
+  axis.replaceChildren(...[0,1,2,3,4].map(n=>htmlElement('span','',balanceNumber.format(scale*n/4)+(balanceMetric==='share'?'%':''))));
   const rows=get('balance-rows');
   rows.replaceChildren();
   for (const row of items) {
@@ -1494,13 +1514,13 @@ function balanceRender() {
     const title=htmlElement('div','balance-row-name');
     title.append(swatch(row.category.color),htmlElement('span','',row.category.name));
     const bars=htmlElement('div','balance-bars');
-    const first=balanceBar(row.primary,scale,row.category,false);
-    if (compareYear) { first.setAttribute('role','group'); first.setAttribute('aria-label',periodName+' '+balanceMetricText(row.primary)); }
+    const first=balanceBar(row.primary,primaryTotal.area,scale,row.category,false);
+    if (compareYear) { first.setAttribute('role','group'); first.setAttribute('aria-label',periodName+' '+balanceMetricText(row.primary,primaryTotal.area)); }
     bars.append(first);
     if (compareYear) {
-      const second=balanceBar(row.secondary,scale,row.category,true);
+      const second=balanceBar(row.secondary,secondaryTotal.area,scale,row.category,true);
       second.setAttribute('role','group');
-      second.setAttribute('aria-label',get('balance-period-secondary').textContent+' '+balanceMetricText(row.secondary));
+      second.setAttribute('aria-label',get('balance-period-secondary').textContent+' '+balanceMetricText(row.secondary,secondaryTotal.area));
       bars.append(second);
     }
     item.append(title,bars);
@@ -1513,6 +1533,7 @@ function balanceRender() {
   if (timeScoped && withoutDates.count) notes.push('Зоны без указанного срока исключены из столбцов за выбранный год.');
   if (summary.footprints) notes.push('Пятна застройки — '+balanceNumber.format(summary.footprints)+' м² отдельно от помещений.');
   if (summary.conditional || comparison.some(zone=>zone.place==='mansions')) notes.push('Срок по особнякам указан при условии инвестиций.');
+  if (balanceMetric==='share') notes.push('Доли рассчитаны от площадей всех функций в выбранной территории и периоде. Для каждого года используется свой итог.');
   notes.push('Пятна застройки, парковочные указатели и открытые площадки не входят в баланс помещений. Знак ≈ означает, что в сумму входят обмерные площади.');
   get('balance-notes').textContent=notes.join(' ');
 }
@@ -1520,7 +1541,7 @@ for (let year=firstYear;year<=lastYear;year++) {
   balanceYear.add(new Option(String(year),String(year)));
   balanceCompare.add(new Option(String(year),String(year)));
 }
-for (const node of [balanceProject,balanceFloor]) node.addEventListener('change',()=>{
+for (const node of [balanceProject,balanceFloor,balanceMansions]) node.addEventListener('change',()=>{
   balancePlaces();balanceCategories();balanceRender();
 });
 balancePlace.addEventListener('change',()=>{ balanceCategories();balanceRender(); });
@@ -1548,6 +1569,7 @@ get('open-balance').addEventListener('click',()=>{
 get('balance-reset').addEventListener('click',()=>{
   balanceProject.value='all';
   balanceFloor.value='ground';
+  balanceMansions.checked=true;
   balancePlaces('');
   balanceMapCategories=[];
   balanceCategories('');
