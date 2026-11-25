@@ -169,6 +169,15 @@ button.data-row:hover { background:var(--soft); }
 .zone.upper .shape { mix-blend-mode:normal; fill-opacity:.75; stroke:#21483d; stroke-width:1.1; stroke-dasharray:4 2; }
 .zone.upper.dim .shape { fill-opacity:.06; stroke-opacity:.18; }
 .zone.upper:hover .shape,.zone.upper.active .shape { fill-opacity:.9; stroke-width:1.55; }
+
+.map-layers { border:0; border-top:1px solid var(--line); padding:8px 0 5px; margin:0 0 8px; min-width:0; }
+.map-layers legend { font-size:13px; font-weight:700; padding:0 8px 0 0; }
+.map-layer { display:flex; align-items:center; gap:8px; min-height:30px; cursor:pointer; font-size:13px; }
+.map-layer input { accent-color:var(--accent); margin:0; width:15px; height:15px; flex:none; }
+.map-layer i, .liquidity-key i { width:14px; height:4px; border-radius:2px; flex:none; background:var(--swatch); }
+.liquidity-key { padding:3px 0 5px 23px; margin:0; font-size:11px; color:var(--muted); list-style:none; }
+.liquidity-key li { display:flex; gap:7px; align-items:center; min-height:17px; }
+.liquidity-note,.map-layer-status { margin:3px 0 5px; font-size:11px; color:var(--muted); }
 </style>
 </head>
 <body>
@@ -198,6 +207,22 @@ button.data-row:hover { background:var(--soft); }
         <select id="place"><option value="">Вся территория</option></select>
       </label>
 
+
+      <fieldset class="map-layers" id="map-layers">
+        <legend>Слои карты</legend>
+        <label class="map-layer"><input type="checkbox" id="layer-walk"><i style="--swatch:#e34245" aria-hidden="true"></i>Пешеходные потоки</label>
+        <label class="map-layer"><input type="checkbox" id="layer-drive"><i style="--swatch:#226d81" aria-hidden="true"></i>Автомобильные потоки</label>
+        <label class="map-layer"><input type="checkbox" id="layer-liquidity"><i style="--swatch:linear-gradient(90deg,#009751 33%,#e79624 33% 66%,#dd312b 66%)" aria-hidden="true"></i>Ликвидность помещений</label>
+        <div id="liquidity-key" hidden>
+          <ul class="liquidity-key">
+            <li><i style="--swatch:#009751" aria-hidden="true"></i>Высокая</li>
+            <li><i style="--swatch:#e79624" aria-hidden="true"></i>Средняя</li>
+            <li><i style="--swatch:#dd312b" aria-hidden="true"></i>Низкая</li>
+          </ul>
+          <p class="liquidity-note">Оценка участков фасадов по презентации.</p>
+        </div>
+        <p class="map-layer-status" id="map-layer-status" role="status" hidden></p>
+      </fieldset>
       <fieldset class="categories"><legend>Функции</legend><div id="categories"></div></fieldset>
       <div class="fence-key" id="fence-key"><span><i class="fence-icon"></i>Забор</span><span><i class="gate-icon"></i>Калитка</span></div>
       <div class="result-bar">
@@ -212,6 +237,7 @@ button.data-row:hover { background:var(--soft); }
         <g id="world" style="isolation:isolate">
           <image id="basemap" x="0" y="0" pointer-events="none" href="atlas-preview-43aaa1b8.webp"></image>
           <g id="features"></g>
+          <g id="analysis-overlays" aria-hidden="true" pointer-events="none"></g>
         </g>
         <g id="area-labels" aria-hidden="true"></g>
       </svg>
@@ -336,12 +362,13 @@ function refresh() {
   }
   get('summary').textContent = visible.length ? 'На карте ' + pluralZones(visible.length) : 'Нет зон по этим условиям';
   get('map-context').textContent = (place.value ? places.get(place.value).name : 'Вся территория') + (currentFloor==='upper'?' · 2-й этаж':'');
-  get('clear').disabled = !place.value && !selectedCategories.size;
+  updateClearButton();
   if (selected && !ids.has(selected.id)) showDetails(null);
   queueAreaLabels();
 }
 
 function resetFilters() {
+  resetAnalysisLayers();
   selectedCategories.clear();
   place.value = '';
   refresh();
@@ -574,9 +601,63 @@ for (const annotation of atlas.upperLabels) {
   name.textContent=annotation.text;
   upperFeatures.append(name);
 }
+
+const analysisMap = get('analysis-overlays');
+const layers = ['walk','drive','liquidity'].map(key => {
+  const node=svgElement('image',{id:'overlay-'+key,x:0,y:0,width:atlas.width,height:atlas.height,hidden:''});
+  analysisMap.append(node);
+  return {key,node,input:get('layer-'+key),state:'idle'};
+});
+function updateClearButton() {
+  const activeLayer=currentFloor==='ground' && get('map-layers').querySelector('input:checked');
+  get('clear').disabled=!place.value && !selectedCategories.size && !activeLayer;
+}
+function updateAnalysisLayers() {
+  updateClearButton();
+  const ground=currentFloor==='ground';
+  get('map-layers').hidden=!ground;
+  analysisMap.toggleAttribute('hidden',!ground);
+  const failures=[];
+  let loading=false;
+  for (const layer of layers) {
+    const enabled=ground && layer.input.checked;
+    layer.node.toggleAttribute('hidden',!enabled || layer.state!=='ready');
+    if (enabled && layer.state==='idle') {
+      layer.state='loading';
+      const image=new Image();
+      image.onload=()=>{
+        layer.node.setAttribute('href',image.src);
+        layer.state='ready';
+        updateAnalysisLayers();
+      };
+      image.onerror=()=>{
+        layer.state='failed';
+        updateAnalysisLayers();
+      };
+      image.src='overlay-'+layer.key+'.webp';
+    }
+    if (enabled && layer.state==='loading') loading=true;
+    if (enabled && layer.state==='failed') failures.push(layer.input.parentElement.textContent.trim());
+  }
+  get('liquidity-key').hidden=!ground || !get('layer-liquidity').checked;
+  const status=get('map-layer-status');
+  status.textContent=failures.length ? 'Слой не загрузился. Включите его снова.' : loading ? 'Загрузка слоя…' : '';
+  status.hidden=!status.textContent;
+}
+for (const layer of layers) {
+  layer.input.addEventListener('change',()=>{
+    if (layer.input.checked && layer.state==='failed') layer.state='idle';
+    updateAnalysisLayers();
+  });
+}
+function resetAnalysisLayers() {
+  for (const layer of layers) layer.input.checked=false;
+  updateAnalysisLayers();
+}
 function chooseFloor(floor) {
   if (floor===currentFloor) return;
   currentFloor=floor;
+  updateAnalysisLayers();
   const isUpper=floor==='upper';
   groundFeatures.toggleAttribute('hidden',isUpper);
   upperFeatures.toggleAttribute('hidden',!isUpper);
