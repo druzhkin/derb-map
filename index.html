@@ -295,7 +295,6 @@ button.data-row:hover { background:var(--soft); }
 #balance-dialog { --balance-column: minmax(150px,28%); --balance-value: 108px; width:min(960px,calc(100% - 36px)); max-height:calc(100dvh - 36px); padding:0; border-radius:13px; }
 .balance-head { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:25px 29px 21px; background:#edf1e9; border-bottom:1px solid var(--line); }
 .balance-head h2 { font-size:clamp(28px,4vw,41px); margin:3px 0 0; letter-spacing:-.025em; }
-.balance-eyebrow { font-size:12px; font-weight:650; color:var(--muted); }
 .balance-filters { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px 14px; padding:18px 29px; border-bottom:1px solid var(--line); }
 .balance-filters label { display:grid; gap:5px; min-width:0; color:var(--muted); font-size:12px; font-weight:650; }
 .balance-filters select { width:100%; min-width:0; border-radius:6px; border:1px solid var(--line); padding:8px 26px 8px 8px; color:var(--ink); background-color:#fff; font:13px var(--sans); }
@@ -303,9 +302,10 @@ button.data-row:hover { background:var(--soft); }
 .balance-reset { justify-self:end; align-self:end; padding-bottom:8px; }
 .balance-filters .balance-mansions { grid-column:span 2; display:flex; align-items:center; align-self:center; gap:7px; color:var(--ink); }
 .balance-mansions input { margin:0; width:16px; height:16px; accent-color:#214638; }
-.balance-summary { padding:17px 29px; display:grid; gap:9px; grid-template-columns:repeat(3,minmax(0,1fr)); }
-.balance-stat { display:grid; align-content:start; gap:5px; padding:12px 14px; border:1px solid var(--line); background:#fff; border-radius:8px; min-width:0; }
-.balance-stat:first-child { border-color:#c4d3c5; background:#eff4ee; }
+.balance-summary { margin:0 29px 16px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-bottom:1px solid var(--line); }
+.balance-stat { display:grid; align-content:start; gap:5px; padding:15px 14px; min-width:0; }
+.balance-stat:first-child { padding-left:0; }
+.balance-stat + .balance-stat { border-left:1px solid var(--line); }
 .balance-stat-value { font:700 clamp(18px,2.8vw,26px)/1.17 var(--sans); font-variant-numeric:tabular-nums; }
 .balance-stat-label,.balance-stat-hint { font-size:12px; color:var(--muted); }
 .balance-stat-hint { line-height:1.35; }
@@ -313,6 +313,7 @@ button.data-row:hover { background:var(--soft); }
 .balance-chart-head { display:flex; align-items:center; justify-content:space-between; gap:11px; margin-bottom:14px; }
 .balance-chart-head h3 { font:normal clamp(19px,3vw,26px)/1.12 var(--display); margin:0; }
 .balance-chart-head p { margin:5px 0 0; font-size:12px; color:var(--muted); }
+.balance-chart-head p:empty { display:none; }
 .balance-metrics { display:flex; gap:3px; background:#eef0ec; padding:3px; border-radius:7px; }
 .balance-metrics button { padding:5px 8px; font-size:12px; background:transparent; border-color:transparent; }
 .balance-metrics [aria-pressed="true"] { background:#fff; border-color:var(--line); color:var(--accent); font-weight:700; }
@@ -341,7 +342,7 @@ button.data-row:hover { background:var(--soft); }
  #balance-dialog { --balance-value: 78px; width:calc(100% - 12px); max-height:calc(100dvh - 12px); }
  .balance-head { padding:15px 14px; }
  .balance-filters { padding:12px 14px; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
- .balance-summary { padding:11px 14px; gap:5px; }
+ .balance-summary { margin:0 14px 12px; }
  .balance-stat { padding:8px 6px; }
  .balance-stat-label,.balance-stat-hint { font-size:10px; }
  .balance-stat-value { font-size:15px; }
@@ -437,15 +438,12 @@ h1,.sidehead h2,.details h2,dialog h2,.balance-chart-head h3 {
 .timeline-slider::-webkit-slider-thumb { border-color:var(--paper); }
 .timeline-slider::-moz-range-thumb { border-color:var(--paper); }
 #balance-dialog { border-radius:14px; }
-.balance-head { background:linear-gradient(105deg,var(--surface),var(--paper)); }
+.balance-head { background:var(--paper); }
 .balance-head h2 { font-size:clamp(31px,4vw,48px); letter-spacing:.04em; }
-.balance-eyebrow { font-size:10px; letter-spacing:.095em; text-transform:uppercase; }
-.balance-filters select,.balance-stats,.balance-metrics { background:var(--surface); }
+.balance-filters select,.balance-metrics { background:var(--surface); }
 .balance-filters select { font-size:11px; }
 .balance-mansions input { accent-color:var(--accent); }
-.balance-stat,.balance-chart { background:var(--paper); }
-.balance-stat:first-child { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
-.balance-stat:first-child :is(.balance-stat-label,.balance-stat-hint) { color:var(--on-accent); opacity:.85; }
+.balance-chart { background:var(--paper); }
 .balance-stat-value { font:400 clamp(25px,3vw,36px)/1 var(--display); letter-spacing:.035em; }
 .balance-chart-head h3 { font-size:clamp(22px,3.3vw,30px); }
 .balance-metrics [aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
@@ -490,7 +488,7 @@ h1,.sidehead h2,.details h2,dialog h2,.balance-chart-head h3 {
       <span class="brandmark" aria-hidden="true">
         <svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.35"><path d="m2 8 13 4 9-8M6 2 4 24m12-12 5 12m-16-7 14 2"/><path d="m8 5 5 1-.5 3.5-5-1zm2 8 4 1-.5 3.5-4-.7z" fill="currentColor" stroke="none"/></svg>
       </span>
-      <div><h1>Дербеневская</h1><p class="subtitle">Ритейл, аменитис и инфраструктура · Рабочий лист v4</p></div>
+      <div><h1>Дербеневская</h1><p class="subtitle">Карта ритейла, аменитис и инфраструктуры</p></div>
     </div>
     <div class="head-actions">
       <button class="button" type="button" id="open-balance" aria-haspopup="dialog">Баланс площадей</button>
@@ -562,7 +560,7 @@ h1,.sidehead h2,.details h2,dialog h2,.balance-chart-head h3 {
             <li><i class="avenue-symbol active-zone"></i>Активная зона авеню</li>
             <li><i class="avenue-symbol calm-zone"></i>Спокойная зона авеню</li>
           </ul>
-          <details><summary>О маршруте</summary><p>Центральная двусторонняя дорога внутри проекта. По ней идут пешеходы и организованы заезды в паркинги. Авеню связывает застройку с историческими объектами.</p></details>
+          <details><summary>О маршруте</summary><p>Центральная улица с двусторонним движением связывает кварталы с историческими зданиями. По ней проходит пешеходный маршрут, вдоль неё расположены въезды в паркинги.</p></details>
         </aside>
       <svg id="viewport" role="group" tabindex="0" aria-label="План квартала. Стрелки перемещают карту, плюс и минус меняют масштаб. Зоны доступны с клавиатуры через список.">
         <g id="world" style="isolation:isolate">
@@ -573,7 +571,7 @@ h1,.sidehead h2,.details h2,dialog h2,.balance-chart-head h3 {
         </g>
         <g id="area-labels" aria-hidden="true"></g>
       </svg>
-      <div class="area-key" id="area-key" hidden>Подписи в м² · ≈ обмер · * схематичный контур</div>
+      <div class="area-key" id="area-key" hidden>Площади в м² · ≈ обмер · * схематичный контур</div>
       <div id="scale-label" class="map-count" aria-hidden="true"></div>
       <div class="tools" aria-label="Управление картой">
         <button id="zoom-in" type="button" aria-label="Приблизить" title="Приблизить">+</button>
@@ -592,7 +590,7 @@ h1,.sidehead h2,.details h2,dialog h2,.balance-chart-head h3 {
         <dl>
           <div><dt>Площадь</dt><dd id="detail-area"></dd></div>
           <div><dt>Доступ</dt><dd id="detail-access"></dd></div>
-          <div><dt>На схеме этапности</dt><dd id="detail-year"></dd></div>
+          <div><dt>Год ввода</dt><dd id="detail-year"></dd></div>
         </dl>
         <p class="note" id="detail-note" hidden></p>
         <p class="hint" id="detail-source"></p><button class="text-btn" id="nearby" type="button">Показать окружение</button>
@@ -606,7 +604,7 @@ h1,.sidehead h2,.details h2,dialog h2,.balance-chart-head h3 {
       <input id="delivery-year" class="timeline-slider" type="range" min="2027" max="2034" step="1" value="2031" aria-label="Год ввода" aria-describedby="delivery-key">
       <div id="delivery-ticks" class="timeline-ticks" aria-label="Выбор года"></div>
     </div>
-    <p class="timeline-key" id="delivery-key">Серым — позже выбранного года или срок не указан</p>
+    <p class="timeline-key" id="delivery-key">Серым показаны более поздние этапы и объекты без срока</p>
   </section>
 </div>
 <dialog id="data-dialog" aria-labelledby="dialog-title">
@@ -617,7 +615,7 @@ h1,.sidehead h2,.details h2,dialog h2,.balance-chart-head h3 {
 
 <dialog id="balance-dialog" aria-labelledby="balance-title">
   <header class="balance-head">
-    <div><div class="balance-eyebrow">Дербеневская</div><h2 id="balance-title">Баланс площадей</h2></div>
+    <h2 id="balance-title">Баланс площадей</h2>
     <form method="dialog"><button class="close" aria-label="Закрыть баланс">×</button></form>
   </header>
   <div class="balance-filters">
@@ -625,16 +623,16 @@ h1,.sidehead h2,.details h2,dialog h2,.balance-chart-head h3 {
     <label>Территория<select id="balance-place"></select></label>
     <label>Этаж<select id="balance-floor"><option value="">Все этажи</option><option value="ground">1-й этаж</option><option value="upper">2-й этаж</option><option value="33">33-й этаж</option></select></label>
     <label>Функция<select id="balance-category"></select></label>
-    <label>Период<select id="balance-period"><option value="by">К году</option><option value="year">Только этот год</option><option value="all">Все этапы</option><option value="unknown">Срок не указан</option></select></label>
+    <label>Период<select id="balance-period"><option value="by">По выбранный год</option><option value="year">За один год</option><option value="all">Все этапы</option><option value="unknown">Срок не указан</option></select></label>
     <label>Год<select id="balance-year"></select></label>
-    <label>Сравнить с годом<select id="balance-compare"><option value="">Без сравнения</option></select></label>
+    <label>Год сравнения<select id="balance-compare"><option value="">Без сравнения</option></select></label>
     <button type="button" class="text-btn balance-reset" id="balance-reset">Сбросить фильтры</button>
     <label class="balance-mansions"><input type="checkbox" id="balance-mansions" checked>Учитывать особняки</label>
   </div>
   <div class="balance-summary" id="balance-summary" aria-live="polite"></div>
   <section class="balance-chart" aria-labelledby="balance-chart-title">
     <div class="balance-chart-head">
-      <div><h3 id="balance-chart-title">Распределение по функциям</h3><p id="balance-chart-context"></p></div>
+      <div><h3 id="balance-chart-title">Площади по функциям</h3><p id="balance-chart-context"></p></div>
       <div class="balance-metrics" role="group" aria-label="Показатель диаграммы">
         <button class="button" type="button" data-balance-metric="area" aria-pressed="true">Площадь</button>
         <button class="button" type="button" data-balance-metric="share" aria-pressed="false">Доля, %</button>
@@ -809,7 +807,7 @@ function showDetails(zone) {
 
 function setScreen() {
   world.setAttribute('transform', 'translate(' + camera.x + ' ' + camera.y + ') scale(' + camera.scale + ')');
-  get('scale-label').textContent = Math.round(camera.scale / camera.min * 100) + '% от общего вида';
+  get('scale-label').textContent = Math.round(camera.scale / camera.min * 100) + '% от общего плана';
   queueAreaLabels();
 }
 
@@ -1629,15 +1627,24 @@ function balanceRender() {
   const periodName=balancePeriod.value==='all' ? 'Все этапы' : balancePeriod.value==='unknown' ? 'Срок не указан' :
     (balancePeriod.value==='by'?'К ':'')+year;
   get('balance-summary').replaceChildren(
-    balanceStat('Сумма площадей',balanceAreaText(summary),[
-      compareSummary ? 'Сравнение · '+balanceAreaText(compareSummary) : '',
+    balanceStat('Площадь помещений',balanceAreaText(summary),[
+      compareSummary ? compareYear+' · '+balanceAreaText(compareSummary) : '',
       summary.count && summary.known!==summary.count ? 'Площадь указана у '+summary.known+' из '+summary.count : '',
     ].filter(Boolean).join(' · ')),
-    balanceStat('Помещений',balanceNumber.format(summary.count),compareSummary ? 'Сравнение · '+balanceNumber.format(compareSummary.count) : ''),
-    balanceStat('Без срока ввода',balanceNumber.format(withoutDates.count),balanceAreaText(withoutDates)==='—' ? 'В пределах фильтров территории и функций' : balanceAreaText(withoutDates)+' в пределах фильтров'),
+    balanceStat('Помещений',balanceNumber.format(summary.count),compareSummary ? compareYear+' · '+balanceNumber.format(compareSummary.count) : ''),
+    balanceStat('Без срока ввода',balanceNumber.format(withoutDates.count),withoutDates.known ? balanceAreaText(withoutDates) : ''),
   );
-  get('balance-chart-context').textContent=periodName+' · '+({area:'площадь, м²',share:'доля общей площади, %',count:'количество помещений'}[balanceMetric])+
-    (balanceMetric==='share' && primaryTotal.area ? ' · 100% = '+balanceAreaText(primaryTotal) : '');
+  get('balance-chart-title').textContent={
+    area:'Площади по функциям',share:'Доли по функциям',count:'Помещения по функциям',
+  }[balanceMetric];
+  const totals=[];
+  if (balanceMetric==='share' && primaryTotal.area) totals.push(periodName+' · 100% = '+balanceAreaText(primaryTotal));
+  if (balanceMetric==='share' && secondaryTotal.area) {
+    const comparisonPeriod=(balancePeriod.value==='by'?'К ':'')+compareYear;
+    totals.push(comparisonPeriod+' · 100% = '+balanceAreaText(secondaryTotal));
+  }
+  const context=get('balance-chart-context');
+  context.textContent=totals.join(' / ') || (compareYear ? '' : periodName);
   const legend=get('balance-chart-legend');
   legend.hidden=!compareYear;
   if (compareYear) {
@@ -1678,13 +1685,13 @@ function balanceRender() {
   }
   const empty=get('balance-empty');
   empty.hidden=!!items.length;
-  empty.textContent=summary.footprints ? 'В этой выборке есть только пятна застройки.' : 'По этим фильтрам помещений нет.';
+  empty.textContent=summary.footprints ? 'По этим фильтрам есть только пятна застройки.' : 'По этим фильтрам помещений нет.';
   const notes=[];
-  if (timeScoped && withoutDates.count) notes.push('Зоны без указанного срока исключены из столбцов за выбранный год.');
+  if (timeScoped && withoutDates.count) notes.push('В графике по годам учитываются помещения с указанным сроком ввода.');
   if (summary.footprints) notes.push('Пятна застройки — '+balanceNumber.format(summary.footprints)+' м² отдельно от помещений.');
   if (summary.conditional || comparison.some(zone=>zone.place==='mansions')) notes.push('Срок по особнякам указан при условии инвестиций.');
-  if (balanceMetric==='share') notes.push('Доли рассчитаны от площадей всех функций в выбранной территории и периоде. Для каждого года используется свой итог.');
-  notes.push('Пятна застройки, парковочные указатели и открытые площадки не входят в баланс помещений. Знак ≈ означает, что в сумму входят обмерные площади.');
+  if (balanceMetric==='share') notes.push('Доля считается от площади всех функций в выбранной территории за соответствующий период.');
+  notes.push('В баланс входят площади помещений. Пятна застройки, указатели паркинга и открытые площадки исключены. Знак ≈ указывает на сумму с обмерными площадями.');
   get('balance-notes').textContent=notes.join(' ');
 }
 for (let year=firstYear;year<=lastYear;year++) {
